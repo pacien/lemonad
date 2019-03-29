@@ -28,7 +28,7 @@ the use of which being problematic in performance-sensitive contexts.
 import static org.pacien.lemonad.attempt.Attempt.*;
 
 (tree.hasLemon() ? success(tree.getLemon()) : failure("No lemon."))
-  .mapFailure(error -> store.buyLemon())
+  .mapError(__ -> store.buyLemon())
   .mapResult(this::makeLemonade)
   .ifSuccess(this::drink);
 ```
@@ -70,7 +70,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'org.pacien:lemonad:master-11a6ff0260-1'
+  implementation 'org.pacien:lemonad:master-815755b959-1'
 }
 ```
 
@@ -88,7 +88,7 @@ dependencies {
   <dependency>
     <groupId>org.pacien</groupId>
     <artifactId>lemonad</artifactId>
-    <version>master-11a6ff0260-1</version>
+    <version>master-815755b959-1</version>
   </dependency>
 </project>
 ```
