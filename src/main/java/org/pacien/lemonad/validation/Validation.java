@@ -41,7 +41,7 @@ import static org.pacien.lemonad.attempt.Attempt.success;
  * @param <E> the error type.
  * @author pacien
  */
-public interface ValidationResult<S, E> {
+public interface Validation<S, E> {
   /**
    * @return whether no error have been reported during the validation.
    */
@@ -66,7 +66,7 @@ public interface ValidationResult<S, E> {
    * @param consumer a subject consumer called if the validation is successful.
    * @return the current object.
    */
-  default ValidationResult<S, E> ifValid(@NonNull Consumer<? super S> consumer) {
+  default Validation<S, E> ifValid(@NonNull Consumer<? super S> consumer) {
     if (isValid()) consumer.accept(getSubject());
     return this;
   }
@@ -75,7 +75,7 @@ public interface ValidationResult<S, E> {
    * @param consumer the consumer called with the validation subject and reported errors if the validation is failed.
    * @return the current object.
    */
-  default ValidationResult<S, E> ifInvalid(@NonNull BiConsumer<? super S, ? super List<? super E>> consumer) {
+  default Validation<S, E> ifInvalid(@NonNull BiConsumer<? super S, ? super List<? super E>> consumer) {
     if (!isValid()) consumer.accept(getSubject(), getErrors());
     return this;
   }
@@ -88,41 +88,41 @@ public interface ValidationResult<S, E> {
   }
 
   /**
-   * @param mapper a function transforming a {@link ValidationResult}.
-   * @return the transformed {@link ValidationResult}.
+   * @param mapper a function transforming a {@link Validation}.
+   * @return the transformed {@link Validation}.
    */
-  default <SS, EE> ValidationResult<SS, EE> flatMap(@NonNull Function<? super ValidationResult<? super S, ? super E>, ? extends ValidationResult<? extends SS, ? extends EE>> mapper) {
+  default <SS, EE> Validation<SS, EE> flatMap(@NonNull Function<? super Validation<? super S, ? super E>, ? extends Validation<? extends SS, ? extends EE>> mapper) {
     //noinspection unchecked
-    return (ValidationResult<SS, EE>) mapper.apply(this);
+    return (Validation<SS, EE>) mapper.apply(this);
   }
 
   /**
    * @param subject           an overriding subject.
-   * @param validationResults a {@link Stream} of {@link ValidationResult}s to merge.
-   * @return the merged {@link ValidationResult} containing all errors from the supplied ones.
+   * @param validationResults a {@link Stream} of {@link Validation}s to merge.
+   * @return the merged {@link Validation} containing all errors from the supplied ones.
    */
-  static <S, E> ValidationResult<S, E> merge(S subject, @NonNull Stream<? extends ValidationResult<?, ? extends E>> validationResults) {
-    return new ValidationResultContainer<>(
+  static <S, E> Validation<S, E> merge(S subject, @NonNull Stream<? extends Validation<?, ? extends E>> validationResults) {
+    return new ValidationContainer<>(
       subject,
       validationResults.flatMap(res -> res.getErrors().stream()).collect(toUnmodifiableList()));
   }
 
   /**
    * @param subject the suject of the validation.
-   * @return a successful {@link ValidationResult}.
+   * @return a successful {@link Validation}.
    */
-  static <S, E> ValidationResult<S, E> valid(S subject) {
-    return new ValidationResultContainer<>(subject, List.of());
+  static <S, E> Validation<S, E> valid(S subject) {
+    return new ValidationContainer<>(subject, List.of());
   }
 
   /**
    * @param subject the suject of the validation.
    * @param error   a validation error.
    * @param errors  additional validation errors.
-   * @return a failed {@link ValidationResult} for the supplied subject.
+   * @return a failed {@link Validation} for the supplied subject.
    */
-  @SafeVarargs static <S, E> ValidationResult<S, E> invalid(S subject, E error, E... errors) {
-    return new ValidationResultContainer<>(
+  @SafeVarargs static <S, E> Validation<S, E> invalid(S subject, E error, E... errors) {
+    return new ValidationContainer<>(
       subject,
       Stream.concat(Stream.of(error), Arrays.stream(errors)).map(Objects::requireNonNull).collect(toUnmodifiableList()));
   }

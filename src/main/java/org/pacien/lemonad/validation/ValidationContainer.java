@@ -26,7 +26,7 @@ import lombok.Value;
 /**
  * @author pacien
  */
-@Value class ValidationResultContainer<S, E> implements ValidationResult<S, E> {
+@Value class ValidationContainer<S, E> implements Validation<S, E> {
   S subject;
   @NonNull List<E> errors;
 

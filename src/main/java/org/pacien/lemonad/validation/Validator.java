@@ -28,8 +28,8 @@ import lombok.NonNull;
 import lombok.val;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
-import static org.pacien.lemonad.validation.ValidationResult.invalid;
-import static org.pacien.lemonad.validation.ValidationResult.valid;
+import static org.pacien.lemonad.validation.Validation.invalid;
+import static org.pacien.lemonad.validation.Validation.valid;
 
 /**
  * A function which applies validation rules on a subject and reports possible errors.
@@ -43,7 +43,7 @@ import static org.pacien.lemonad.validation.ValidationResult.valid;
    * @param subject the subject to validate, which can potentially be null.
    * @return the non-null result of the validation of the supplied subject.
    */
-  ValidationResult<S, E> validate(S subject);
+  Validation<S, E> validate(S subject);
 
   /**
    * @param predicate     the validation predicate testing the validity of a subject.
@@ -60,7 +60,7 @@ import static org.pacien.lemonad.validation.ValidationResult.valid;
    */
   @SafeVarargs static <S, E> Validator<S, E> validatingAll(@NonNull Validator<? super S, ? extends E>... validators) {
     val validatorList = Arrays.stream(validators).map(Objects::requireNonNull).collect(toUnmodifiableList());
-    return subject -> new ValidationResultContainer<>(
+    return subject -> new ValidationContainer<>(
       subject,
       validatorList.stream()
                    .flatMap(validator -> validator.validate(subject).getErrors().stream())
@@ -75,6 +75,6 @@ import static org.pacien.lemonad.validation.ValidationResult.valid;
   static <S, F, E> Validator<S, E> validatingField(@NonNull Function<? super S, ? extends F> getter,
                                                    @NonNull Validator<? super F, ? extends E> validator) {
     //noinspection unchecked
-    return subject -> new ValidationResultContainer<>(subject, (List<E>) validator.validate(getter.apply(subject)).getErrors());
+    return subject -> new ValidationContainer<>(subject, (List<E>) validator.validate(getter.apply(subject)).getErrors());
   }
 }

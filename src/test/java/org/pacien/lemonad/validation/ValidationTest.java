@@ -32,44 +32,44 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * @author pacien
  */
-class ValidationResultTest {
+class ValidationTest {
   @Test void testValidResult() {
     var subject = "subject";
-    var validationResult = ValidationResult.valid(subject);
-    assertTrue(validationResult.getErrors().isEmpty());
-    assertTrue(validationResult.isValid());
-    assertFalse(validationResult.isInvalid());
-    validationResult.ifValid(innerSubject -> assertEquals(subject, innerSubject));
-    validationResult.ifInvalid((__, ___) -> fail());
+    var validation = Validation.valid(subject);
+    assertTrue(validation.getErrors().isEmpty());
+    assertTrue(validation.isValid());
+    assertFalse(validation.isInvalid());
+    validation.ifValid(innerSubject -> assertEquals(subject, innerSubject));
+    validation.ifInvalid((__, ___) -> fail());
   }
 
   @Test void testInvalidResult() {
     var subject = "subject";
     var errors = List.of(0, 1);
-    var validationResult = ValidationResult.invalid(subject, 0, 1);
-    assertEquals(errors, validationResult.getErrors());
-    assertFalse(validationResult.isValid());
-    assertTrue(validationResult.isInvalid());
-    validationResult.ifValid(Assertions::fail);
-    validationResult.ifInvalid((innerSubject, innerErrors) -> {
+    var validation = Validation.invalid(subject, 0, 1);
+    assertEquals(errors, validation.getErrors());
+    assertFalse(validation.isValid());
+    assertTrue(validation.isInvalid());
+    validation.ifValid(Assertions::fail);
+    validation.ifInvalid((innerSubject, innerErrors) -> {
       assertEquals(subject, innerSubject);
       assertEquals(errors, innerErrors);
     });
   }
 
   @Test void testFlatMap() {
-    ValidationResult.valid("subject")
-                    .ifInvalid((__, ___) -> fail())
-                    .flatMap(res -> ValidationResult.invalid(res.getSubject(), 0))
-                    .ifValid(innerSubject -> fail());
+    Validation.valid("subject")
+              .ifInvalid((__, ___) -> fail())
+              .flatMap(res -> Validation.invalid(res.getSubject(), 0))
+              .ifValid(innerSubject -> fail());
   }
 
   @Test void testMerge() {
     var subject = "subject";
-    assertEquals(List.of(0, 1, 2, 3), ValidationResult.merge(subject, Stream.of(
-      ValidationResult.valid(subject),
-      ValidationResult.invalid(subject, 0, 1),
-      ValidationResult.invalid(subject, 2, 3))
+    assertEquals(List.of(0, 1, 2, 3), Validation.merge(subject, Stream.of(
+      Validation.valid(subject),
+      Validation.invalid(subject, 0, 1),
+      Validation.invalid(subject, 2, 3))
     ).getErrors());
   }
 }
