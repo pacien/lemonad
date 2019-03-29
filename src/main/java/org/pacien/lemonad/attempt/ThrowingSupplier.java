@@ -16,4 +16,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-rootProject.name = 'lemonad'
+package org.pacien.lemonad.attempt;
+
+/**
+ * @param <R> the result type.
+ * @param <T> the {@link Throwable} type.
+ * @author pacien
+ */
+public interface ThrowingSupplier<R, T extends Throwable> {
+  /**
+   * @return a result.
+   * @throws T a potential {@link Throwable}.
+   */
+  R get() throws T;
+}

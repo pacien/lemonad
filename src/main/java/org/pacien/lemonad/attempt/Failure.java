@@ -16,4 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-rootProject.name = 'lemonad'
+package org.pacien.lemonad.attempt;
+
+import java.util.NoSuchElementException;
+
+import lombok.Value;
+
+/**
+ * @author pacien
+ */
+@Value class Failure<R, E> implements Attempt<R, E> {
+  E error;
+
+  @Override public boolean isSuccess() {
+    return false;
+  }
+
+  @Override public boolean isFailure() {
+    return true;
+  }
+
+  @Override public R getResult() {
+    throw new NoSuchElementException();
+  }
+}

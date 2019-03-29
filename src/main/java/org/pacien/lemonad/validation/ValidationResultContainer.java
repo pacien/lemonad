@@ -16,4 +16,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-rootProject.name = 'lemonad'
+package org.pacien.lemonad.validation;
+
+import java.util.List;
+
+import lombok.NonNull;
+import lombok.Value;
+
+/**
+ * @author pacien
+ */
+@Value class ValidationResultContainer<S, E> implements ValidationResult<S, E> {
+  S subject;
+  @NonNull List<E> errors;
+
+  @Override public boolean isValid() {
+    return errors.isEmpty();
+  }
+
+  @Override public boolean isInvalid() {
+    return !isValid();
+  }
+}

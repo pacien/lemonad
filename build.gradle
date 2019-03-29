@@ -1,16 +1,43 @@
+/*
+ * lemonad - Some functional sweetness for Java
+ * Copyright (C) 2019  Pacien TRAN-GIRARD
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 plugins {
-    id 'java'
+  id 'java'
 }
 
 group 'org.pacien'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.11
+
+test {
+  useJUnitPlatform()
+}
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+  compileOnly 'org.projectlombok:lombok:1.18.6'
+  testCompileOnly 'org.projectlombok:lombok:1.18.6'
+  annotationProcessor 'org.projectlombok:lombok:1.18.6'
+
+  testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+  testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
 }
