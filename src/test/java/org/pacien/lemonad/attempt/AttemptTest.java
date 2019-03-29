@@ -87,7 +87,7 @@ class AttemptTest {
     var fault2 = 2;
 
     Attempt.success(result0)
-           .mapFailure(__ -> fail())
+           .mapError(__ -> fail())
            .mapResult(res -> Attempt.success(result1))
            .mapResult(res -> {
              assertEquals(result1, res);
@@ -95,11 +95,11 @@ class AttemptTest {
            })
            .ifSuccess(__ -> fail())
            .mapResult(__ -> fail())
-           .mapFailure(f -> {
+           .mapError(f -> {
              assertEquals(fault0, f);
              return Attempt.failure(fault1);
            })
-           .mapFailure(f -> {
+           .mapError(f -> {
              assertEquals(fault1, f);
              return Attempt.success(result2);
            })
