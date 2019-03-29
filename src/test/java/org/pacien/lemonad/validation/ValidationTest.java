@@ -20,6 +20,7 @@ package org.pacien.lemonad.validation;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.pacien.lemonad.attempt.Attempt;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -41,6 +42,7 @@ class ValidationTest {
     assertFalse(validation.isInvalid());
     validation.ifValid(innerSubject -> assertEquals(subject, innerSubject));
     validation.ifInvalid((__, ___) -> fail());
+    assertEquals(Attempt.success(subject), validation.toAttempt());
   }
 
   @Test void testInvalidResult() {
@@ -55,6 +57,7 @@ class ValidationTest {
       assertEquals(subject, innerSubject);
       assertEquals(errors, innerErrors);
     });
+    assertEquals(Attempt.failure(errors), validation.toAttempt());
   }
 
   @Test void testFlatMap() {
