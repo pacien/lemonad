@@ -4,9 +4,5 @@
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="lemonad.main" target="11" />
-      <module name="lemonad.test" target="11" />
-    </bytecodeTargetLevel>
   </component>
 </project>
