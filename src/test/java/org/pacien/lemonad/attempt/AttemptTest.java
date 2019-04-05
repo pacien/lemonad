@@ -44,13 +44,13 @@ class AttemptTest {
   }
 
   @Test void testSimpleFailure() {
-    var fault = 0;
-    var failure = Attempt.failure(fault);
+    var error = 0;
+    var failure = Attempt.failure(error);
     assertTrue(failure.isFailure());
     assertFalse(failure.isSuccess());
-    assertEquals(fault, failure.getError());
+    assertEquals(error, failure.getError());
     assertThrows(NoSuchElementException.class, failure::getResult);
-    failure.ifFailure(innerFault -> assertEquals(fault, innerFault));
+    failure.ifFailure(innerError -> assertEquals(error, innerError));
     failure.ifSuccess(__ -> fail());
   }
 
@@ -74,46 +74,52 @@ class AttemptTest {
     assertFalse(failure.isSuccess());
     assertEquals(exception, failure.getError());
     assertThrows(NoSuchElementException.class, failure::getResult);
-    failure.ifFailure(innerFault -> assertEquals(exception, innerFault));
+    failure.ifFailure(innerError -> assertEquals(exception, innerError));
     failure.ifSuccess(__ -> fail());
   }
 
   @Test void testTransformationFlow() {
     var result0 = 0;
     var result1 = "res";
-    var result2 = true;
+    var result2 = "result";
     var result3 = 0L;
-    var fault0 = 0L;
-    var fault1 = 0;
-    var fault2 = "fail";
-    var fault3 = false;
+    var error0 = 0;
+    var error1 = 0L;
+    var error2 = "fail";
+    var error3 = false;
 
-    Attempt.success(result0)
-           .mapError(__ -> fail())
-           .mapResult(res -> Attempt.success(result1))
-           .mapResult(res -> {
-             assertEquals(result1, res);
-             return Attempt.failure(fault0);
-           })
-           .ifSuccess(__ -> fail())
-           .mapResult(__ -> fail())
-           .mapError(f -> {
-             assertEquals(fault0, f);
-             return Attempt.failure(fault1);
-           })
-           .mapError(f -> {
-             assertEquals(fault1, f);
-             return Attempt.success(result2);
-           })
-           .ifFailure(__ -> fail())
-           .flatMap(attempt -> {
-             assertEquals(result2, attempt.getResult());
-             return Attempt.failure(fault2);
-           })
-           .ifSuccess(__ -> fail())
-           .ifFailure(f -> assertEquals(fault2, f))
-           .map(__ -> Attempt.failure(fault3), __ -> Attempt.success(result3))
-           .ifSuccess(result -> assertEquals(result3, result))
-           .ifFailure(__ -> fail());
+    Attempt.<Integer, Integer>success(result0)
+      .mapError((Integer err) -> {
+        fail();
+        return Attempt.failure(err);
+      })
+      .mapResult((Integer res) -> Attempt.success(result1))
+      .mapResult((String res) -> {
+        assertEquals(result1, res);
+        return Attempt.<String, Integer>failure(error0);
+      })
+      .ifSuccess((String __) -> fail())
+      .mapResult((String res) -> {
+        fail();
+        return Attempt.success(res);
+      })
+      .mapError((Integer err) -> {
+        assertEquals(error0, err);
+        return Attempt.failure(error1);
+      })
+      .mapError((Long err) -> {
+        assertEquals(error1, err);
+        return Attempt.<String, Long>success(result2);
+      })
+      .ifFailure((Long err) -> fail())
+      .flatMap((Attempt<? super String, ? super Long> attempt) -> {
+        assertEquals(result2, attempt.getResult());
+        return Attempt.<String, String>failure(error2);
+      })
+      .ifSuccess(__ -> fail())
+      .ifFailure(f -> assertEquals(error2, f))
+      .map((String __) -> Attempt.failure(error3), (String __) -> Attempt.success(result3))
+      .ifSuccess((Long result) -> assertEquals(result3, result))
+      .ifFailure((Boolean __) -> fail());
   }
 }
