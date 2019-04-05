@@ -90,6 +90,17 @@ public interface Attempt<R, E> {
   }
 
   /**
+   * @param resultMapper a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
+   * @param errorMapper  a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
+   * @return the transformed {@link Attempt}.
+   */
+  default <RR, EE> Attempt<RR, EE> map(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends EE>> resultMapper,
+                                       @NonNull Function<? super E, ? extends Attempt<? extends RR, ? extends EE>> errorMapper) {
+    //noinspection unchecked
+    return (Attempt<RR, EE>) (isSuccess() ? resultMapper.apply(getResult()) : errorMapper.apply(getError()));
+  }
+
+  /**
    * @param mapper a function transforming an {@link Attempt}.
    * @return the transformed {@link Attempt}
    */

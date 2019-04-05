@@ -81,10 +81,12 @@ class AttemptTest {
   @Test void testTransformationFlow() {
     var result0 = 0;
     var result1 = "res";
-    var result2 = 0L;
-    var fault0 = 0;
-    var fault1 = 1;
-    var fault2 = 2;
+    var result2 = true;
+    var result3 = 0L;
+    var fault0 = 0L;
+    var fault1 = 0;
+    var fault2 = "fail";
+    var fault3 = false;
 
     Attempt.success(result0)
            .mapError(__ -> fail())
@@ -109,6 +111,9 @@ class AttemptTest {
              return Attempt.failure(fault2);
            })
            .ifSuccess(__ -> fail())
-           .ifFailure(f -> assertEquals(fault2, f));
+           .ifFailure(f -> assertEquals(fault2, f))
+           .map(__ -> Attempt.failure(fault3), __ -> Attempt.success(result3))
+           .ifSuccess(result -> assertEquals(result3, result))
+           .ifFailure(__ -> fail());
   }
 }
