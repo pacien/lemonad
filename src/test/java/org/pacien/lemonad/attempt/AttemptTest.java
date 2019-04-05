@@ -89,12 +89,15 @@ class AttemptTest {
     var error3 = false;
 
     Attempt.<Integer, Long>success(result0)
-      .mapError((Long err) -> {
+      .recoverError((Long err) -> {
         fail();
         return Attempt.failure(err);
       })
-      .mapResult((Integer res) -> Attempt.success(result1))
-      .mapResult((String res) -> {
+      .mapResult((Integer res) -> {
+        assertEquals(result0, res);
+        return result1;
+      })
+      .transformResult((String res) -> {
         assertEquals(result1, res);
         return Attempt.<String, Integer>failure(error0);
       }, (Integer err) -> {
@@ -102,15 +105,15 @@ class AttemptTest {
         return (long) err;
       })
       .ifSuccess((String __) -> fail())
-      .mapResult((String res) -> {
+      .transformResult((String res) -> {
         fail();
         return Attempt.success(res);
       })
       .mapError((Long err) -> {
         assertEquals(error0, err);
-        return Attempt.failure(error1);
+        return error1;
       })
-      .mapError((Long err) -> {
+      .recoverError((Long err) -> {
         assertEquals(error1, err);
         return Attempt.<Long, Long>success(result2);
       }, (Long res) -> {
@@ -124,7 +127,7 @@ class AttemptTest {
       })
       .ifSuccess(__ -> fail())
       .ifFailure(f -> assertEquals(error2, f))
-      .map((String __) -> Attempt.failure(error3), (String __) -> Attempt.success(result3))
+      .transform((String __) -> Attempt.failure(error3), (String __) -> Attempt.success(result3))
       .ifSuccess((String result) -> assertEquals(result3, result))
       .ifFailure((Boolean __) -> fail());
   }

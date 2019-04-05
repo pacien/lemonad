@@ -72,52 +72,68 @@ public interface Attempt<R, E> {
   }
 
   /**
-   * @param mapper a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
+   * @param transformer a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
    * @return this {@link Attempt} if it is a failure, or the produced one otherwise.
    */
-  default <RR> Attempt<RR, E> mapResult(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends E>> mapper) {
+  default <RR> Attempt<RR, E> transformResult(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends E>> transformer) {
     //noinspection unchecked
-    return (Attempt<RR, E>) (isSuccess() ? mapper.apply(getResult()) : this);
+    return (Attempt<RR, E>) (isSuccess() ? transformer.apply(getResult()) : this);
   }
 
   /**
-   * @param mapper       a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
-   * @param errorAdapter a function adapting any intermediate error returned by the {@code mapper} function.
+   * @param transformer  a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
+   * @param errorAdapter a function adapting any intermediate error returned by the {@code transformer} function.
    * @return this {@link Attempt} if it is a failure, or the produced one otherwise.
    */
-  default <RR, IE> Attempt<RR, E> mapResult(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends IE>> mapper,
-                                            @NonNull Function<? super IE, ? extends E> errorAdapter) {
-    return mapResult(result -> mapper.apply(result).mapError(error -> failure(errorAdapter.apply(error))));
+  default <RR, IE> Attempt<RR, E> transformResult(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends IE>> transformer,
+                                                  @NonNull Function<? super IE, ? extends E> errorAdapter) {
+    return transformResult(transformer.andThen(attempt -> attempt.recoverError(errorAdapter.andThen(Attempt::failure))));
   }
 
   /**
-   * @param mapper a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
+   * @param mapper a function mapping used to map any result if this {@link Attempt} is a success.
+   * @return this {@link Attempt} if it is a failure, or the mutated one otherwise.
+   */
+  default <RR> Attempt<RR, E> mapResult(@NonNull Function<? super R, ? extends RR> mapper) {
+    return transformResult(mapper.andThen(Attempt::success));
+  }
+
+  /**
+   * @param recoverer a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
    * @return this {@link Attempt} if it is a success, or the alternative {@link Attempt} retrieved from the supplier otherwise.
    */
-  default <EE> Attempt<R, EE> mapError(@NonNull Function<? super E, ? extends Attempt<? extends R, ? extends EE>> mapper) {
+  default <EE> Attempt<R, EE> recoverError(@NonNull Function<? super E, ? extends Attempt<? extends R, ? extends EE>> recoverer) {
     //noinspection unchecked
-    return (Attempt<R, EE>) (isFailure() ? mapper.apply(getError()) : this);
+    return (Attempt<R, EE>) (isFailure() ? recoverer.apply(getError()) : this);
   }
 
   /**
-   * @param mapper        a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
-   * @param resultAdapter a function adapting any intermediate result returned by the {@code mapper} function.
+   * @param recoverer     a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
+   * @param resultAdapter a function adapting any intermediate result returned by the {@code recoverer} function.
    * @return this {@link Attempt} if it is a success, or the alternative {@link Attempt} retrieved from the supplier otherwise.
    */
-  default <IR, EE> Attempt<R, EE> mapError(@NonNull Function<? super E, ? extends Attempt<? extends IR, ? extends EE>> mapper,
-                                           @NonNull Function<? super IR, ? extends R> resultAdapter) {
-    return mapError(error -> mapper.apply(error).mapResult(result -> success(resultAdapter.apply(result))));
+  default <IR, EE> Attempt<R, EE> recoverError(@NonNull Function<? super E, ? extends Attempt<? extends IR, ? extends EE>> recoverer,
+                                               @NonNull Function<? super IR, ? extends R> resultAdapter) {
+    return recoverError(recoverer.andThen(attempt -> attempt.transformResult(resultAdapter.andThen(Attempt::success))));
   }
 
   /**
-   * @param resultMapper a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
-   * @param errorMapper  a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
+   * @param mapper a function mapping used to map any result if this {@link Attempt} is a failure.
+   * @return this {@link Attempt} if it is a success, or the mutated one otherwise.
+   */
+  default <EE> Attempt<R, EE> mapError(@NonNull Function<? super E, ? extends EE> mapper) {
+    return recoverError(mapper.andThen(Attempt::failure));
+  }
+
+  /**
+   * @param resultTransformer a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
+   * @param errorTransformer  a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
    * @return the transformed {@link Attempt}.
    */
-  default <RR, EE> Attempt<RR, EE> map(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends EE>> resultMapper,
-                                       @NonNull Function<? super E, ? extends Attempt<? extends RR, ? extends EE>> errorMapper) {
+  default <RR, EE> Attempt<RR, EE> transform(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends EE>> resultTransformer,
+                                             @NonNull Function<? super E, ? extends Attempt<? extends RR, ? extends EE>> errorTransformer) {
     //noinspection unchecked
-    return (Attempt<RR, EE>) (isSuccess() ? resultMapper.apply(getResult()) : errorMapper.apply(getError()));
+    return (Attempt<RR, EE>) (isSuccess() ? resultTransformer.apply(getResult()) : errorTransformer.apply(getError()));
   }
 
   /**
