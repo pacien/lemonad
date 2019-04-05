@@ -70,7 +70,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'org.pacien:lemonad:f59f8e6088'
+  implementation 'org.pacien:lemonad:614bd19ad5'
 }
 ```
 
@@ -88,7 +88,7 @@ dependencies {
   <dependency>
     <groupId>org.pacien</groupId>
     <artifactId>lemonad</artifactId>
-    <version>f59f8e6088</version>
+    <version>614bd19ad5</version>
   </dependency>
 </project>
 ```
