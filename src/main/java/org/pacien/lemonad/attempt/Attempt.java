@@ -55,7 +55,7 @@ public interface Attempt<R, E> {
 
   /**
    * @param resultConsumer a {@link Consumer} of result called if the {@link Attempt} is a success.
-   * @return the current {@link Attempt}
+   * @return the current {@link Attempt}.
    */
   default Attempt<R, E> ifSuccess(@NonNull Consumer<? super R> resultConsumer) {
     if (isSuccess()) resultConsumer.accept(getResult());
@@ -64,7 +64,7 @@ public interface Attempt<R, E> {
 
   /**
    * @param errorConsumer a {@link Consumer} of error called if the {@link Attempt} is a failure.
-   * @return the current {@link Attempt}
+   * @return the current {@link Attempt}.
    */
   default Attempt<R, E> ifFailure(@NonNull Consumer<? super E> errorConsumer) {
     if (isFailure()) errorConsumer.accept(getError());
@@ -102,7 +102,7 @@ public interface Attempt<R, E> {
 
   /**
    * @param mapper a function transforming an {@link Attempt}.
-   * @return the transformed {@link Attempt}
+   * @return the transformed {@link Attempt}.
    */
   default <RR, EE> Attempt<RR, EE> flatMap(@NonNull Function<? super Attempt<? super R, ? super E>, ? extends Attempt<? extends RR, ? extends EE>> mapper) {
     //noinspection unchecked
