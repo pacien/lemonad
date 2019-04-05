@@ -81,12 +81,32 @@ public interface Attempt<R, E> {
   }
 
   /**
+   * @param mapper       a function producing an {@link Attempt}, called with the current result if this {@link Attempt} is a success.
+   * @param errorAdapter a function adapting any intermediate error returned by the {@code mapper} function.
+   * @return this {@link Attempt} if it is a failure, or the produced one otherwise.
+   */
+  default <RR, IE> Attempt<RR, E> mapResult(@NonNull Function<? super R, ? extends Attempt<? extends RR, ? extends IE>> mapper,
+                                            @NonNull Function<? super IE, ? extends E> errorAdapter) {
+    return mapResult(result -> mapper.apply(result).mapError(error -> failure(errorAdapter.apply(error))));
+  }
+
+  /**
    * @param mapper a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
    * @return this {@link Attempt} if it is a success, or the alternative {@link Attempt} retrieved from the supplier otherwise.
    */
   default <EE> Attempt<R, EE> mapError(@NonNull Function<? super E, ? extends Attempt<? extends R, ? extends EE>> mapper) {
     //noinspection unchecked
     return (Attempt<R, EE>) (isFailure() ? mapper.apply(getError()) : this);
+  }
+
+  /**
+   * @param mapper        a function producing an {@link Attempt}, called with the current error if this {@link Attempt} is a failure.
+   * @param resultAdapter a function adapting any intermediate result returned by the {@code mapper} function.
+   * @return this {@link Attempt} if it is a success, or the alternative {@link Attempt} retrieved from the supplier otherwise.
+   */
+  default <IR, EE> Attempt<R, EE> mapError(@NonNull Function<? super E, ? extends Attempt<? extends IR, ? extends EE>> mapper,
+                                           @NonNull Function<? super IR, ? extends R> resultAdapter) {
+    return mapError(error -> mapper.apply(error).mapResult(result -> success(resultAdapter.apply(result))));
   }
 
   /**

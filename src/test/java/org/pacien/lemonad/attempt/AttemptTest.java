@@ -81,15 +81,15 @@ class AttemptTest {
   @Test void testTransformationFlow() {
     var result0 = 0;
     var result1 = "res";
-    var result2 = "result";
-    var result3 = 0L;
+    var result2 = 0L;
+    var result3 = "0";
     var error0 = 0;
     var error1 = 0L;
     var error2 = "fail";
     var error3 = false;
 
-    Attempt.<Integer, Integer>success(result0)
-      .mapError((Integer err) -> {
+    Attempt.<Integer, Long>success(result0)
+      .mapError((Long err) -> {
         fail();
         return Attempt.failure(err);
       })
@@ -97,29 +97,35 @@ class AttemptTest {
       .mapResult((String res) -> {
         assertEquals(result1, res);
         return Attempt.<String, Integer>failure(error0);
+      }, (Integer err) -> {
+        assertEquals(error0, err);
+        return (long) err;
       })
       .ifSuccess((String __) -> fail())
       .mapResult((String res) -> {
         fail();
         return Attempt.success(res);
       })
-      .mapError((Integer err) -> {
+      .mapError((Long err) -> {
         assertEquals(error0, err);
         return Attempt.failure(error1);
       })
       .mapError((Long err) -> {
         assertEquals(error1, err);
-        return Attempt.<String, Long>success(result2);
+        return Attempt.<Long, Long>success(result2);
+      }, (Long res) -> {
+        assertEquals(result2, res);
+        return res.toString();
       })
       .ifFailure((Long err) -> fail())
       .flatMap((Attempt<? super String, ? super Long> attempt) -> {
-        assertEquals(result2, attempt.getResult());
+        assertEquals(Long.toString(result2), attempt.getResult());
         return Attempt.<String, String>failure(error2);
       })
       .ifSuccess(__ -> fail())
       .ifFailure(f -> assertEquals(error2, f))
       .map((String __) -> Attempt.failure(error3), (String __) -> Attempt.success(result3))
-      .ifSuccess((Long result) -> assertEquals(result3, result))
+      .ifSuccess((String result) -> assertEquals(result3, result))
       .ifFailure((Boolean __) -> fail());
   }
 }
