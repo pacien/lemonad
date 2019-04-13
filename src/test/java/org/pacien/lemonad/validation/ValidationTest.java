@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.pacien.lemonad.attempt.Attempt;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ValidationTest {
   @Test void testValidResult() {
     var subject = "subject";
-    var validation = Validation.valid(subject);
+    var validation = Validation.of(subject);
     assertTrue(validation.getErrors().isEmpty());
     assertTrue(validation.isValid());
     assertFalse(validation.isInvalid());
@@ -48,7 +47,7 @@ class ValidationTest {
   @Test void testInvalidResult() {
     var subject = "subject";
     var errors = List.of(0, 1);
-    var validation = Validation.invalid(subject, 0, 1);
+    var validation = Validation.of(subject, 0, 1);
     assertEquals(errors, validation.getErrors());
     assertFalse(validation.isValid());
     assertTrue(validation.isInvalid());
@@ -61,18 +60,32 @@ class ValidationTest {
   }
 
   @Test void testFlatMap() {
-    Validation.valid("subject")
-              .ifInvalid((__, ___) -> fail())
-              .flatMap(res -> Validation.invalid(res.getSubject(), 0))
-              .ifValid(innerSubject -> fail());
+    Validation
+      .of("subject")
+      .ifInvalid((__, ___) -> fail())
+      .flatMap(res -> Validation.of(res.getSubject(), 0))
+      .ifValid(innerSubject -> fail());
   }
 
   @Test void testMerge() {
-    var subject = "subject";
-    assertEquals(List.of(0, 1, 2, 3), Validation.merge(subject, Stream.of(
-      Validation.valid(subject),
-      Validation.invalid(subject, 0, 1),
-      Validation.invalid(subject, 2, 3))
-    ).getErrors());
+    var validation = Validation
+      .of(12345, 0)
+      .merge(s -> Validation.of(s, 1))
+      .merge((Integer s) -> Integer.toString(s), (String s) -> Validation.of(s, 2))
+      .merge(Validation.of(0L, List.of(3)))
+      .merge(List.of(4));
+
+    assertEquals(Validation.of(12345, 0, 1, 2, 3, 4), validation);
+  }
+
+  @Test void testValidate() {
+    var validation = Validation
+      .of("subject")
+      .validate(String::isEmpty, 0)
+      .validate(String::length, len -> len > 0, 1)
+      .validate(subject -> List.of(2, 3))
+      .validate(subject -> subject.charAt(0), firstChar -> firstChar == 's' ? List.of() : List.of(4));
+
+    assertEquals(Validation.of("subject", 0, 2, 3), validation);
   }
 }

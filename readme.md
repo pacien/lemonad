@@ -28,28 +28,22 @@ the use of which being problematic in performance-sensitive contexts.
 import static org.pacien.lemonad.attempt.Attempt.*;
 
 (tree.hasLemon() ? success(tree.getLemon()) : failure("No lemon."))
-  .recoverError(__ -> store.buyLemon())
+  .recoverError(error -> store.buyLemon())
   .transformResult(this::makeLemonade)
   .ifSuccess(this::drink);
 ```
 
 ### Validation
 
-The `Validation` monad represents a validation of a subject which can be either valid or invalid.
-In the latter case, the monad wraps one or multiple validation errors in addition to the subject of the validation.
-
-The `Validator` functional interface represents a function which performs verification operations on a supplied subject and returns
-a `Validation`.
-`Validator`s can be composed to perform verifications against multiple criteria and obtain an aggregated `Validation`.
+The `Validation` monad represents a validation of a subject which can be successful or failed with errors.
+Those errors are aggregated from all the checks that have failed.
 
 ```java
-import static org.pacien.lemonad.validation.Validator.*;
+import org.pacien.lemonad.validation.Validation;
 
-var validator = validatingAll(
-  ensuringPredicate(not(Lemon::isRotten), "Bad lemon."),
-  validatingField(Lemon::juiceContent, ensuringPredicate(mL -> mL >= 40, "Not juicy.")));
-
-validator.validate(lemon)
+Validation.of(lemon)
+  .validate(not(Lemon::isRotten), "Bad lemon.")
+  .validate(Lemon::juiceContent, mL -> mL >= 40, "Not juicy")
   .ifValid(this::makeLemonade)
   .ifInvalid(errors -> makeLifeTakeTheLemonBack());
 ```

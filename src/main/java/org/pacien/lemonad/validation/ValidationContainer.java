@@ -23,6 +23,8 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.Value;
 
+import static java.util.Collections.unmodifiableList;
+
 /**
  * @author pacien
  */
@@ -36,5 +38,9 @@ import lombok.Value;
 
   @Override public boolean isInvalid() {
     return !isValid();
+  }
+
+  @Override public List<E> getErrors() {
+    return unmodifiableList(errors);
   }
 }
